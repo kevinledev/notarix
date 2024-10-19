@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
   DynamicWidget,
@@ -10,15 +10,17 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const isLoggedIn = useIsLoggedIn();
-  const { user } = useDynamicContext();
+  const { user, setShowAuthFlow } = useDynamicContext();
+  const [file, setFile] = useState(null);
 
-  //useEffect(() => {
-  //  if (isLoggedIn) {
-  //    console.log("WE DID IT");
-  //  } else {
-  //    console.log("nope");
-  //  }
-  //}, [isLoggedIn]);
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    setFile(selectedFile);
+  };
+
+  const handleNextPage = () => {
+    console.log("nav to next page");
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -41,14 +43,18 @@ export default function Home() {
 
           <div className="flex-1 bg-gray-100 p-6 rounded-lg">
             <h3 className="text-xl font-bold mb-4">Upload Your Document</h3>
-            <Input type="file" className="mb-4" />
+            <Input type="file" className="mb-4" onChange={handleFileChange} />
             {isLoggedIn && user ? (
               <div className="flex flex-row gap-2">
                 <DynamicWidget />
-                <Button>Next</Button>
+                <Button onClick={handleNextPage} disabled={!file}>
+                  Next
+                </Button>
               </div>
             ) : (
-              <Button>Connect Wallet</Button>
+              <Button onClick={() => setShowAuthFlow(true)} disabled={!file}>
+                Connect Wallet
+              </Button>
             )}
           </div>
         </div>
