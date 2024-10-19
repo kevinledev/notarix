@@ -1,23 +1,24 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import {
-  DynamicConnectButton,
+  DynamicWidget,
   useDynamicContext,
   useIsLoggedIn,
 } from "@dynamic-labs/sdk-react-core";
-import { useWallet } from "@/hooks/useWallet";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const isLoggedIn = useIsLoggedIn();
+  const { user } = useDynamicContext();
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      console.log("WE DID IT");
-    } else {
-      console.log("nope");
-    }
-  }, [isLoggedIn]);
+  //useEffect(() => {
+  //  if (isLoggedIn) {
+  //    console.log("WE DID IT");
+  //  } else {
+  //    console.log("nope");
+  //  }
+  //}, [isLoggedIn]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -41,11 +42,14 @@ export default function Home() {
           <div className="flex-1 bg-gray-100 p-6 rounded-lg">
             <h3 className="text-xl font-bold mb-4">Upload Your Document</h3>
             <Input type="file" className="mb-4" />
-            <DynamicConnectButton>
-              <div className="bg-primary text-white text-center py-2 px-4 rounded-lg cursor-pointer hover:bg-primary-dark active:bg-primary-darker focus:ring-2 focus:ring-primary-light focus:outline-none">
-                Submit
+            {isLoggedIn && user ? (
+              <div className="flex flex-row gap-2">
+                <DynamicWidget />
+                <Button>Next</Button>
               </div>
-            </DynamicConnectButton>
+            ) : (
+              <Button>Connect Wallet</Button>
+            )}
           </div>
         </div>
       </div>
