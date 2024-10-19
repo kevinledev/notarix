@@ -14,7 +14,6 @@ const WalletProvider = ({ children }) => {
       }}
     >
       {children}
-      <DynamicWidget />
     </DynamicContextProvider>
   );
 };
