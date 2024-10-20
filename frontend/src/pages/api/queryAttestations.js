@@ -1,26 +1,14 @@
-import {
-  IndexService,
-  decodeOnChainData,
-  DataLocationOnChain,
-} from "@ethsign/sp-sdk";
-
-const SCHEMA_DETAILS = [
-  { name: "notaries", type: "string[]" },
-  { name: "document_title", type: "string" },
-  { name: "attestation_status", type: "string" },
-  { name: "synaps_session_id", type: "string" },
-  { name: "affadavit_recording", type: "string" },
-  { name: "case_status", type: "string" },
-  { name: "paid", type: "bool" },
-];
+import { IndexService } from "@ethsign/sp-sdk";
+import { decodeSignData } from "@/lib/utils";
 
 export default async function handler(req, res) {
   try {
+    const { attester_id } = req.query;
     const indexService = new IndexService("testnet");
 
     const response = await indexService.queryAttestationList({
       schemaId: "onchain_evm_80002_0x6d", // Your full schema's ID
-      attester: req.attester_id, // Alice's address
+      attester: attester_id, // Alice's address
       page: 1,
       mode: "onchain", // Data storage location
     });
@@ -28,11 +16,7 @@ export default async function handler(req, res) {
     const decodedResponse = response.rows.map((row) => {
       return {
         id: row.id,
-        ...decodeOnChainData(
-          row.data,
-          DataLocationOnChain.ONCHAIN,
-          SCHEMA_DETAILS,
-        ),
+        ...decodeSignData(row.data),
       };
     });
 

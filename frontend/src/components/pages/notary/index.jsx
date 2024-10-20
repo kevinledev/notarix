@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -12,6 +13,7 @@ import {
 
 export default function Notary() {
   const [data, setData] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,7 +30,7 @@ export default function Notary() {
         const result = await response.json();
         const parsedResult = await result.data.map((data) => {
           return {
-            id: data.synaps_session_id,
+            id: data.id,
             title: data.document_title,
             status: data.case_status,
             deadline: "20-05-2024",
@@ -48,8 +50,8 @@ export default function Notary() {
     pendingNotary: "Pending Notary Review",
   };
 
-  const handleViewDetails = () => {
-    //router.push(`/attestation/${id}`);
+  const handleViewDetails = (id) => {
+    router.push(`/notary/${id}`);
   };
 
   return (
@@ -65,7 +67,7 @@ export default function Notary() {
       </TableHeader>
       <TableBody>
         {data.map((val) => (
-          <TableRow key={val.id} onClick={handleViewDetails}>
+          <TableRow key={val.id} onClick={() => handleViewDetails(val.id)}>
             <TableCell className="font-medium">{val.id}</TableCell>
             <TableCell>{val.title}</TableCell>
             <TableCell>
