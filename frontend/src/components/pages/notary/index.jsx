@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -10,80 +11,41 @@ import {
 } from "@/components/ui/table";
 
 export default function Notary() {
-  //TODO: fetch the data some how
-  const data = [
-    {
-      id: "123",
-      title: "Car crash Affidavit",
-      deadline: "14-05-2024",
-      status: "pendingCustomer",
-    },
-    {
-      id: "124",
-      title: "Insurance Claim Form",
-      deadline: "20-05-2024",
-      status: "completed",
-    },
-    {
-      id: "125",
-      title: "Medical Report Submission",
-      deadline: "22-05-2024",
-      status: "pendingNotary",
-    },
-    {
-      id: "126",
-      title: "Property Damage Estimate",
-      deadline: "01-06-2024",
-      status: "pendingCustomer",
-    },
-    {
-      id: "127",
-      title: "Witness Statement",
-      deadline: "05-06-2024",
-      status: "completed",
-    },
-    {
-      id: "128",
-      title: "Accident Police Report",
-      deadline: "10-06-2024",
-      status: "pendingNotary",
-    },
-    {
-      id: "129",
-      title: "Vehicle Inspection Report",
-      deadline: "15-06-2024",
-      status: "pendingCustomer",
-    },
-    {
-      id: "130",
-      title: "Repair Cost Estimate",
-      deadline: "20-06-2024",
-      status: "completed",
-    },
-    {
-      id: "131",
-      title: "Traffic Camera Footage Request",
-      deadline: "25-06-2024",
-      status: "pendingNotary",
-    },
-    {
-      id: "132",
-      title: "Lawyer Consultation",
-      deadline: "30-06-2024",
-      status: "pendingCustomer",
-    },
-  ];
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        //TODO: store attestor id on sign in
+        const attestor_id = "0x00B4be811627409dfEFaa7188c56aeAC7474B21b";
+        const response = await fetch(
+          `/api/queryAttestations?attester_id=${attestor_id}`,
+        ); // Call the API route
+        if (!response.ok) {
+          console.error(response.message);
+          throw new Error("Network response was not ok");
+        }
+        const result = await response.json();
+        const parsedResult = await result.data.map((data) => {
+          return {
+            id: data.synaps_session_id,
+            title: data.document_title,
+            status: data.case_status,
+            deadline: "20-05-2024",
+          };
+        });
+
+        setData(parsedResult);
+      } catch (error) {}
+    };
+
+    fetchData();
+  }, []);
 
   const statusMap = {
     pendingCustomer: "Pending Customer Review",
     completed: "Completed",
     pendingNotary: "Pending Notary Review",
-  };
-
-  const StatusBadge = (status) => {
-    const color = statusColorMap[status] || "gray"; // Default to gray if no match
-
-    return <Badge className={`bg-${color}-500`}>{status}</Badge>;
   };
 
   return (

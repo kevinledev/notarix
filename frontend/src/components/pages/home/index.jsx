@@ -86,7 +86,7 @@ export default function Home() {
                 </Button>
               </div>
             ) : (
-              <Button onClick={() => setShowAuthFlow(true)} disabled={!file}>
+              <Button onClick={() => setShowAuthFlow(true)>
                 Connect Wallet
               </Button>
             )}
