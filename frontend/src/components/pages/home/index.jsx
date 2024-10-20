@@ -16,6 +16,8 @@ export default function Home() {
   const { user, setShowAuthFlow, primaryWallet } = useDynamicContext();
   const { file, setFile } = useFile();
 
+  const {sessionId, setSessionId} = useState(null);
+
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
@@ -149,6 +151,7 @@ export default function Home() {
         sessionId: data.session_id, // Assuming the session ID is in the response
         onFinish: () => {
           alert("Verification finished");
+          setSessionId(data.session_id);
         },
         mode: "modal",
       });
