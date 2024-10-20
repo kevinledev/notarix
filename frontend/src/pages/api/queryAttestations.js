@@ -3,12 +3,12 @@ import { decodeSignData } from "@/lib/utils";
 
 export default async function handler(req, res) {
   try {
-    const { attester_id } = req.query;
+    const { attestor_id, schema_id, schema } = req.query;
     const indexService = new IndexService("testnet");
 
     const response = await indexService.queryAttestationList({
-      schemaId: "onchain_evm_80002_0x6d", // Your full schema's ID
-      attester: attester_id, // Alice's address
+      schemaId: schema_id, // Your full schema's ID
+      //attester: attestor_id, // Alice's address
       page: 1,
       mode: "onchain", // Data storage location
     });
@@ -16,11 +16,14 @@ export default async function handler(req, res) {
     const decodedResponse = response.rows.map((row) => {
       return {
         id: row.id,
-        ...decodeSignData(row.data),
+        date: row.attestTimestamp,
+        ...decodeSignData(row.data, schema),
       };
     });
 
-    console.log(decodedResponse);
+    console.log(response);
+
+    //console.log(decodedResponse);
 
     return res.status(200).json({ success: true, data: decodedResponse });
   } catch (error) {

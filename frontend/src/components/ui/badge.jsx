@@ -12,11 +12,9 @@ const badgeVariants = cva(
           "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        pendingNotary:
+        pending:
           "border-transparent bg-red-500 text-red-foreground hover:bg-red-600", // Red for Pending Notary Review
-        pendingCustomer:
-          "border-transparent bg-yellow-500 text-yellow-foreground hover:bg-yellow-600", // Yellow for Pending Customer Review
-        completed:
+        complete:
           "border-transparent bg-green-500 text-green-foreground hover:bg-green-600", // Green for Completed
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
