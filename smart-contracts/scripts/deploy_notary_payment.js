@@ -3,16 +3,15 @@ const { ethers } = require("hardhat");
 async function main() {
   console.log("Starting the deployment...");
 
-  const usdcAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582"; // Verify this address is correct
+  const usdcAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582";
 
   const NotaryPayment = await ethers.getContractFactory("NotaryPayment");
   console.log("Contract factory created.");
 
   const notaryPayment = await NotaryPayment.deploy(usdcAddress, {
-    gasLimit: 6000000, // Increase gas limit if needed
+    gasLimit: 6000000,
   });
 
-  // Log the contract object
   console.log("Contract object:", notaryPayment);
 
   if (notaryPayment.deployTransaction) {
@@ -21,7 +20,6 @@ async function main() {
       notaryPayment.deployTransaction.hash
     );
 
-    // Wait for the transaction to be mined
     const tx = await notaryPayment.deployTransaction.wait();
     console.log("Contract successfully deployed at:", notaryPayment.address);
     console.log("Transaction details:", tx);
