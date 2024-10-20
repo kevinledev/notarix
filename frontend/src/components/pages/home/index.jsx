@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { Synaps } from "@synaps-io/verify-sdk";
 import { useFile } from "@/components/providers/fileprovider";
+import { ethers, parseUnits, Interface } from "ethers";
 import {
   DynamicWidget,
   useDynamicContext,
@@ -12,19 +13,127 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
-  const { user, setShowAuthFlow } = useDynamicContext();
+  const { user, setShowAuthFlow, primaryWallet } = useDynamicContext();
   const { file, setFile } = useFile();
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
   };
+
+  // Define USDC contract ABI and NotaryPayment contract ABI
+  const usdcAbi = [
+    // Standard ERC-20 function to check allowance
+    "function allowance(address owner, address spender) external view returns (uint256)",
+    "function approve(address spender, uint256 amount) external returns (bool)",
+  ];
+  const notaryPaymentAbi = ["function payFee(uint256 amount) public"];
+  const usdcAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582"; // USDC address
+  const notaryPaymentAddress = "0xce730a2a1ac580f5d94da6ec03050bda37e8a5b2"; // NotaryPayment contract address
+
+  const waitForTransactionReceipt = async (publicClient, txHash) => {
+    let receipt = null;
+    while (!receipt) {
+      console.log("Waiting for transaction to be mined...");
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds
+      try {
+        receipt = await publicClient.getTransactionReceipt({ hash: txHash });
+      } catch (error) {
+        console.log("Receipt not found yet, continuing to wait...");
+      }
+    }
+    console.log("Transaction mined:", receipt);
+    return receipt;
+  };
+
+  const payFee = async (primaryWallet) => {
+    if (!primaryWallet) {
+      console.error("No wallet connected or wrong type");
+      return;
+    }
+
+    const usdcAmount = parseUnits("0.01", 6); // Convert 0.01 USDC to correct units
+    try {
+      const publicClient = await primaryWallet.getPublicClient(); // For reading from the blockchain
+      const walletClient = await primaryWallet.getWalletClient(); // For sending transactions
+      const userAddress = primaryWallet.address; // User's address
+
+      // Step 1: Check allowance
+      const usdcInterface = new Interface(usdcAbi);
+      const allowanceData = usdcInterface.encodeFunctionData("allowance", [
+        userAddress,
+        notaryPaymentAddress,
+      ]);
+
+      // Call the allowance function on the USDC contract
+      const allowanceResult = await publicClient.call({
+        to: usdcAddress,
+        data: allowanceData,
+      });
+
+      // Decode the result from hex to a BigNumber
+      const decodedResult = usdcInterface.decodeFunctionResult(
+        "allowance",
+        allowanceResult.data
+      );
+      const currentAllowance = ethers.toBigInt(decodedResult[0]);
+
+      console.log("Current allowance:", currentAllowance.toString());
+
+      // If the allowance is less than the amount needed, request approval
+      if (currentAllowance < usdcAmount) {
+        console.log("Allowance is insufficient, requesting approval...");
+        const approveData = usdcInterface.encodeFunctionData("approve", [
+          notaryPaymentAddress,
+          usdcAmount,
+        ]);
+
+        const approveTx = await walletClient.sendTransaction({
+          to: usdcAddress,
+          data: approveData,
+        });
+        console.log("Approve transaction hash:", approveTx);
+
+        // Wait for the approval transaction to be mined
+        const approvalReceipt = await publicClient.getTransactionReceipt({
+          hash: approveTx,
+        });
+        if (!approvalReceipt) {
+          console.error("Approval transaction not confirmed yet");
+          return;
+        }
+        console.log("Approval confirmed:", approvalReceipt);
+      } else {
+        console.log("Sufficient allowance, proceeding to payFee...");
+      }
+
+      // Step 2: Call the payFee function to send USDC
+      const notaryInterface = new Interface(notaryPaymentAbi);
+      const payData = notaryInterface.encodeFunctionData("payFee", [
+        usdcAmount,
+      ]);
+
+      const payTx = await walletClient.sendTransaction({
+        to: notaryPaymentAddress,
+        data: payData,
+      });
+
+      console.log("Payment transaction hash:", payTx);
+
+      // Wait for the payment transaction to be confirmed by polling for the receipt
+      const payReceipt = await waitForTransactionReceipt(publicClient, payTx);
+      console.log("Payment transaction receipt:", payReceipt);
+    } catch (error) {
+      console.error("Error in sending USDC:", error);
+    }
+  };
+
   const initSynapsSession = async () => {
     try {
-      const response = await fetch('/api/initSynapsSession', {
-        method: 'POST',
+      const response = await fetch("/api/initSynapsSession", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -33,7 +142,7 @@ export default function Home() {
       }
 
       const data = await response.json();
-      console.log('Session initialized:', data);
+      console.log("Session initialized:", data);
 
       // Initialize Synaps with the session ID from the response
       Synaps.init({
@@ -47,13 +156,12 @@ export default function Home() {
       // Show the Synaps modal
       Synaps.show();
     } catch (error) {
-      console.error('Error initializing session:', error);
+      console.error("Error initializing session:", error);
     }
   };
   const handleNextPage = () => {
     console.log("nav to next page");
     initSynapsSession()
-    router.push("/sign");
   };
 
   return (
@@ -84,9 +192,10 @@ export default function Home() {
                 <Button onClick={handleNextPage} disabled={!file}>
                   Next
                 </Button>
+                <Button onClick={() => payFee(primaryWallet)}>Pay Now</Button>
               </div>
             ) : (
-              <Button onClick={() => setShowAuthFlow(true)>
+              <Button onClick={() => setShowAuthFlow(true)}>
                 Connect Wallet
               </Button>
             )}
