@@ -1,4 +1,5 @@
 import { useRouter } from "next/router";
+import { useState } from "react";
 import { Synaps } from "@synaps-io/verify-sdk";
 import { useFile } from "@/components/providers/fileprovider";
 import { ethers, parseUnits, Interface } from "ethers";
@@ -15,6 +16,8 @@ export default function Home() {
   const isLoggedIn = useIsLoggedIn();
   const { user, setShowAuthFlow, primaryWallet } = useDynamicContext();
   const { file, setFile } = useFile();
+
+  const [ sessionId, setSessionId ] = useState(null);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -149,6 +152,7 @@ export default function Home() {
         sessionId: data.session_id, // Assuming the session ID is in the response
         onFinish: () => {
           alert("Verification finished");
+          setSessionId(data.session_id);
         },
         mode: "modal",
       });
@@ -189,10 +193,14 @@ export default function Home() {
             {isLoggedIn && user ? (
               <div className="flex flex-row gap-2">
                 <DynamicWidget />
-                <Button onClick={handleNextPage} disabled={!file}>
-                  Next
-                </Button>
-                <Button onClick={() => payFee(primaryWallet)}>Pay Now</Button>
+                {!sessionId && (
+                  <Button onClick={handleNextPage} disabled={!file}>
+                    Next
+                  </Button>
+                )}
+                { sessionId && (
+                  <Button onClick={() => payFee(primaryWallet)}>Pay Now</Button>
+                )}
               </div>
             ) : (
               <Button onClick={() => setShowAuthFlow(true)}>
