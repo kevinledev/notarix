@@ -6,6 +6,8 @@ https://github.com/0xPolygon/dapp-launchpad
 
 - added Dynamic labs wallet connect
 
+### Overall Design
+![Design](static/design.png)
 
 ## Starting a dev environment
 1. install dapp-launchpad globally:
@@ -34,3 +36,4 @@ Polygon was selected due to its low transaction fees and high scalability, which
 
 ### Integration of USDC for Payments:
 USDC (Circle) is the primary currency collected from users in the notary service. By using USDC, the contract ensures a consistent payment experience for users. The **NotaryPayment.sol** contract collects fees directly in USDC from users when they submit documents for notarization.
+
