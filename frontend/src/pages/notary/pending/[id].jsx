@@ -67,16 +67,6 @@ export default function AttestationDetail() {
 
         console.log('about to stamp ')
 
-        console.log("Good data", {
-          notaries: data.notaries,
-          document_title: data.document_title,
-          attestation_status: data.attestation_status,
-          synaps_session_id: data.synaps_session_id,
-          file_url: data.file_url,
-          case_status: "complete",
-          paid: data.paid,
-        },)
-
         
 
         const attestationRes = await client.createAttestation({
@@ -89,7 +79,7 @@ export default function AttestationDetail() {
             attestation_status: data.attestation_status,
             synaps_session_id: data.synaps_session_id,
             file_url: data.file_url,
-            case_status: data.case_status,
+            case_status: "complete",
             notary_approved: true,
             paid: true,
             notary: primaryWallet.address,
