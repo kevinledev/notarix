@@ -3,6 +3,13 @@ import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button"; // shadcn button
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // shadcn card
 import { Separator } from "@/components/ui/separator"; // shadcn separator for styling
+import Link from "next/link";
+import {
+  useDynamicContext, DynamicWidget 
+} from "@dynamic-labs/sdk-react-core";
+import { SignProtocolClient, SpMode, EvmChains } from "@ethsign/sp-sdk";
+
+
 
 export default function AttestationDetail() {
   const [data, setData] = useState(null); // Data from the API
@@ -10,6 +17,7 @@ export default function AttestationDetail() {
   const router = useRouter();
   const { id } = router.query;
 
+  const { primaryWallet } = useDynamicContext();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -39,6 +47,63 @@ export default function AttestationDetail() {
   const handleSign = () => {
     console.log("signing document");
   };
+
+
+  async function notaryStampOfApproval() {
+
+    if (primaryWallet) {
+      try {
+        const publicClient = await primaryWallet.getPublicClient();
+        const walletClient = await primaryWallet.getWalletClient()
+
+        const client = new SignProtocolClient(SpMode.OnChain, {
+          account: publicClient.account,
+          walletClient,
+          chain: EvmChains.polygonAmoy,
+        });
+
+
+        // const signer = publicClient.account
+
+        console.log('about to stamp ')
+
+        console.log("Good data", {
+          notaries: data.notaries,
+          document_title: data.document_title,
+          attestation_status: data.attestation_status,
+          synaps_session_id: data.synaps_session_id,
+          file_url: data.file_url,
+          case_status: "complete",
+          paid: data.paid,
+        },)
+
+        
+
+        const attestationRes = await client.createAttestation({
+          schemaId: "0x78",
+
+          data: {
+
+            notaries: data.notaries,
+            document_title: data.document_title,
+            attestation_status: data.attestation_status,
+            synaps_session_id: data.synaps_session_id,
+            file_url: data.file_url,
+            case_status: data.case_status,
+            notary_approved: true,
+            paid: true,
+            notary: primaryWallet.address,
+            submitter_attest_id: data.id
+          },
+          indexingValue: String(primaryWallet.address).toLowerCase()
+        });
+
+        console.log("attestationRes", attestationRes)
+      } catch (e) {
+        console.log('e', e)
+      }
+    }
+  }
 
   return (
     <div className="p-6">
@@ -79,6 +144,13 @@ export default function AttestationDetail() {
                 <strong>Synaps Session ID: </strong>
                 {data.synaps_session_id || "N/A"}
               </div>
+
+              <Separator />
+              <div>
+                <strong>File URL: </strong>
+                <Link href={data.file_url || "N/A"}>{data.file_url || "N/A"}</Link>
+              </div>
+
               <Separator />
               <div>
                 <strong>Case Status: </strong>
@@ -97,8 +169,9 @@ export default function AttestationDetail() {
         <Button variant="outline" onClick={() => router.back()}>
           Go Back
         </Button>
-        {!data.notary_approved && <Button onClick={handleSign}>Sign</Button>}
+        {!data.notary_approved && <Button onClick={notaryStampOfApproval}>Sign</Button>}
       </div>
+      {/* <DynamicWidget /> */}
     </div>
   );
 }

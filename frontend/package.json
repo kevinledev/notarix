@@ -15,6 +15,7 @@
     "@gatefi/js-sdk": "^0.20.0",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
+    "@skalenetwork/filestorage.js": "~1.0.1",
     "@synaps-io/verify-sdk": "^4.0.48",
     "@web3modal/wagmi": "^3.2.0",
     "class-variance-authority": "^0.7.0",
@@ -27,7 +28,7 @@
     "react-pdf": "^9.1.1",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
-    "viem": "^2.21.29",
+    "viem": "^2.21.30",
     "wagmi": "^1.4.5"
   },
   "devDependencies": {

@@ -11,6 +11,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { SignProtocolClient, SpMode, EvmChains } from "@ethsign/sp-sdk";
+const Filestorage = require('@skalenetwork/filestorage.js');
+const Web3 = require('web3');
 
 export default function Home() {
   const router = useRouter();
@@ -18,13 +21,56 @@ export default function Home() {
   const { user, setShowAuthFlow, primaryWallet } = useDynamicContext();
   const { file, setFile } = useFile();
 
-  const [sessionId, setSessionId] = useState(false);
+  const [sessionId, setSessionId] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
 
   const handleFileChange = (event) => {
+
+    const specificDirectory = ""
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
+    console.log("the selected file", selectedFile)
+    event.preventDefault();
+    //create web3 connection
+    const web3Provider = new Web3.providers.HttpProvider(
+      "https://testnet.skalenodes.com/v1/giant-half-dual-testnet"
+    );
+    let web3 = new Web3(web3Provider);
+
+    //get filestorage instance
+    let filestorage = new Filestorage(web3, true);
+
+    //provide your account & private key
+    //note this must include the 0x prefix
+    let privateKey = '0x' + process.env.NEXT_PUBLIC_SKALE_ACCOUNT_PRIVATE_KEY;
+    let account = process.env.NEXT_PUBLIC_SKALE_ACCOUNT;
+
+    //get file data from file upload input field
+    // let file = document.getElementById('files').files[0];
+    let reader = new FileReader();
+
+    //file path in account tree (dirA/file.name)
+    let filePath;
+    if (specificDirectory === '') {
+      filePath = selectedFile.name;
+    } else {
+      filePath = specificDirectory + '/' + selectedFile.name;
+    }
+
+    //file storage method to upload file
+    reader.onload = async function(e) {
+      const arrayBuffer = reader.result
+      const bytes = new Uint8Array(arrayBuffer);
+      let link = filestorage.uploadFile(
+        account,
+        filePath,
+        bytes,
+        privateKey
+      );
+      console.log("The link is", link)
+    };
+    reader.readAsArrayBuffer(selectedFile);
   };
 
   const handlePayment = async () => {
@@ -38,6 +84,63 @@ export default function Home() {
       setIsLoading(false); // Stop loading in all cases
     }
   };
+
+
+
+
+  function handleClick(e) {
+    // e.preventDefault();
+
+
+
+    const web3Provider = new Web3.providers.HttpProvider('https://testnet.skalenodes.com/fs/giant-half-dual-testnet');
+  let filestorage = new Filestorage(web3Provider);
+
+  }
+
+
+  async function submitAttestation() {
+    setIsLoading(true)
+
+    if (primaryWallet) {
+      try {
+        const publicClient = await primaryWallet.getPublicClient();
+        const walletClient = await primaryWallet.getWalletClient();
+
+        console.log("primaryWallet publicClient", publicClient)
+        console.log("primaryWallet walletClient", walletClient)
+
+        const client = new SignProtocolClient(SpMode.OnChain, {
+          account: publicClient.account,
+          walletClient,
+          chain: EvmChains.polygonAmoy,
+        });
+
+
+        console.log('about to create attestationRes')
+
+        const attestationRes = await client.createAttestation({
+          schemaId: "0x72",
+
+          data: {
+            notaries: ["0xblah", "0xblah2", "0xblah3"],
+            document_title: file.name,
+            attestation_status: "created",
+            // signer: "0x00B4be811627409dfEFaa7188c56aeAC7474B21b",
+            synaps_session_id: sessionId,
+            file_url: "https://testnet.skalenodes.com/fs/giant-half-dual-testnet/00b4be811627409dfefaa7188c56aeac7474b21b/" + file.name,
+            case_status: "pending",
+            paid: true
+          },
+          indexingValue: primaryWallet.address.toLowerCase()
+        });
+
+        console.log("attestationRes", attestationRes)
+      } catch (e) {
+        console.log('e', e)
+      }
+    }
+  }
 
   // Define USDC contract ABI and NotaryPayment contract ABI
   const usdcAbi = [
@@ -249,7 +352,7 @@ export default function Home() {
                     ) : (
                       <Button
                         disabled={isLoading}
-                        onClick={() => console.log("Submit documents")}
+                        onClick={submitAttestation}
                       >
                         {isLoading ? (
                           <>
