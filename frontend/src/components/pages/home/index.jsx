@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { Synaps } from "@synaps-io/verify-sdk";
 import {
   DynamicWidget,
   useDynamicContext,
@@ -17,9 +18,40 @@ export default function Home() {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
   };
+  const initSynapsSession = async () => {
+    try {
+      const response = await fetch('/api/initSynapsSession', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Session initialized:', data);
+
+      // Initialize Synaps with the session ID from the response
+      Synaps.init({
+        sessionId: data.session_id, // Assuming the session ID is in the response
+        onFinish: () => {
+          alert("Verification finished");
+        },
+        mode: "modal",
+      });
+
+      // Show the Synaps modal
+      Synaps.show();
+    } catch (error) {
+      console.error('Error initializing session:', error);
+    }
+  };
   const handleNextPage = () => {
     console.log("nav to next page");
+    initSynapsSession()
   };
 
   return (
