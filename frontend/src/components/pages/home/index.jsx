@@ -220,7 +220,7 @@ export default function Home() {
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Processing...
+                          Loading...
                         </>
                       ) : (
                         "Next"
@@ -247,8 +247,18 @@ export default function Home() {
                         </Button>
                       </div>
                     ) : (
-                      <Button onClick={() => console.log("Submit documents")}>
-                        Submit Documents
+                      <Button
+                        disabled={isLoading}
+                        onClick={() => console.log("Submit documents")}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          "Submit Documents"
+                        )}
                       </Button>
                     )}
                   </div>
