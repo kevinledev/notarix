@@ -10,6 +10,7 @@ import {
 } from "@dynamic-labs/sdk-react-core";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
@@ -17,11 +18,25 @@ export default function Home() {
   const { user, setShowAuthFlow, primaryWallet } = useDynamicContext();
   const { file, setFile } = useFile();
 
-  const [ sessionId, setSessionId ] = useState(null);
+  const [sessionId, setSessionId] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
+  };
+
+  const handlePayment = async () => {
+    setIsLoading(true); // Start loading
+    try {
+      await payFee(primaryWallet); // Try to process the payment
+      setPaymentCompleted(true); // Only set this if the payment succeeds
+    } catch (error) {
+      console.error("Payment error:", error); // Handle errors
+    } finally {
+      setIsLoading(false); // Stop loading in all cases
+    }
   };
 
   // Define USDC contract ABI and NotaryPayment contract ABI
@@ -132,6 +147,7 @@ export default function Home() {
   };
 
   const initSynapsSession = async () => {
+    setIsLoading(true)
     try {
       const response = await fetch("/api/initSynapsSession", {
         method: "POST",
@@ -161,11 +177,12 @@ export default function Home() {
       Synaps.show();
     } catch (error) {
       console.error("Error initializing session:", error);
+    } finally {
+      setIsLoading(false)
     }
   };
   const handleNextPage = () => {
-    console.log("nav to next page");
-    initSynapsSession()
+    initSynapsSession();
   };
 
   return (
@@ -191,15 +208,50 @@ export default function Home() {
             <h3 className="text-xl font-bold mb-4">Upload Your Document</h3>
             <Input type="file" className="mb-4" onChange={handleFileChange} />
             {isLoggedIn && user ? (
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-col gap-2 items-center">
                 <DynamicWidget />
                 {!sessionId && (
-                  <Button onClick={handleNextPage} disabled={!file}>
-                    Next
-                  </Button>
+                  <div class="flex items-center justify-center">
+                    <Button
+                      className="w-auto"
+                      onClick={handleNextPage}
+                      disabled={!file || isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        "Next"
+                      )}
+                    </Button>
+                  </div>
                 )}
-                { sessionId && (
-                  <Button onClick={() => payFee(primaryWallet)}>Pay Now</Button>
+                {sessionId && (
+                  <div>
+                    {!paymentCompleted ? (
+                      <div className="flex flex-row items-center align-center gap-4">
+                        <p className="text-sm">
+                          Payment Due: <b>50 USDC</b>
+                        </p>
+                        <Button onClick={handlePayment} disabled={isLoading}>
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            "Pay Now"
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button onClick={() => console.log("Submit documents")}>
+                        Submit Documents
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             ) : (
