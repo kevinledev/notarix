@@ -11,17 +11,32 @@
   "dependencies": {
     "@dynamic-labs/ethereum": "^3.4.2",
     "@dynamic-labs/sdk-react-core": "^3.4.2",
+    "@ethsign/sp-sdk": "^0.7.5",
+    "@gatefi/js-sdk": "^0.20.0",
+    "@radix-ui/react-separator": "^1.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@skalenetwork/filestorage.js": "~1.0.1",
+    "@synaps-io/verify-sdk": "^4.0.48",
     "@web3modal/wagmi": "^3.2.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
     "ethers": "^6.8.0",
+    "lucide-react": "^0.453.0",
     "next": "^13.5.6",
     "react": "^18",
     "react-dom": "^18",
-    "viem": "^1.21.4",
+    "react-pdf": "^9.1.1",
+    "tailwind-merge": "^2.5.4",
+    "tailwindcss-animate": "^1.0.7",
+    "viem": "^2.21.30",
     "wagmi": "^1.4.5"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.20",
     "eslint": "^8",
     "eslint-config-next": "13.5.6",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
     "vercel": "^32.5.4"
   }
 }
