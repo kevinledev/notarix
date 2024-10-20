@@ -13,6 +13,7 @@ export default function Home() {
   const isLoggedIn = useIsLoggedIn();
   const { user, setShowAuthFlow } = useDynamicContext();
   const [file, setFile] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -38,7 +39,11 @@ export default function Home() {
       Synaps.init({
         sessionId: data.session_id, // Assuming the session ID is in the response
         onFinish: () => {
-          alert("Verification finished");
+          alert("Verification finished" );
+          //  set sessionId in state
+          console.log( "session id: ", data.session_id)
+          setSessionId(data.session_id);
+
         },
         mode: "modal",
       });
