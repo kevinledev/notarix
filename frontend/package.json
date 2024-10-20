@@ -12,6 +12,7 @@
     "@dynamic-labs/ethereum": "^3.4.2",
     "@dynamic-labs/sdk-react-core": "^3.4.2",
     "@radix-ui/react-slot": "^1.1.0",
+    "@skalenetwork/filestorage.js": "~1.0.1",
     "@web3modal/wagmi": "^3.2.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

@@ -7,6 +7,9 @@ import {
 } from "@dynamic-labs/sdk-react-core";
 import { useWallet } from "@/hooks/useWallet";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+const Filestorage = require('@skalenetwork/filestorage.js');
+const Web3 = require('web3');
 
 export default function Home() {
   const isLoggedIn = useIsLoggedIn();
@@ -18,6 +21,61 @@ export default function Home() {
       console.log("nope");
     }
   }, [isLoggedIn]);
+
+
+  async function upload(event, specificDirectory=''){
+    event.preventDefault();
+    //create web3 connection
+    const web3Provider = new Web3.providers.HttpProvider(
+      "https://testnet.skalenodes.com/v1/giant-half-dual-testnet"
+    );
+    let web3 = new Web3(web3Provider);
+  
+    //get filestorage instance
+    let filestorage = new Filestorage(web3, true);
+  
+    //provide your account & private key
+    //note this must include the 0x prefix
+    let privateKey = '0x' + '';
+    let account = "";
+  
+    //get file data from file upload input field
+    let file = document.getElementById('files').files[0];
+    let reader = new FileReader();
+  
+    //file path in account tree (dirA/file.name)
+    let filePath;
+    if (specificDirectory === '') {
+      filePath = file.name;
+    } else {
+      filePath = specificDirectory + '/' + file.name;
+    }
+  
+    //file storage method to upload file
+    reader.onload = async function(e) {
+      const arrayBuffer = reader.result
+      const bytes = new Uint8Array(arrayBuffer);
+      let link = filestorage.uploadFile(
+        account,
+        filePath,
+        bytes,
+        privateKey
+      );
+      console.log("The link is", link)
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+
+  function handleClick(e) {
+    // e.preventDefault();
+
+   
+
+    const web3Provider = new Web3.providers.HttpProvider('https://testnet.skalenodes.com/fs/giant-half-dual-testnet');
+  let filestorage = new Filestorage(web3Provider);
+
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -48,7 +106,13 @@ export default function Home() {
             </DynamicConnectButton>
           </div>
         </div>
+        <Button onClick={handleClick}>
+          Test
+        </Button>
+        <input onChange={(e) => upload(e)} type="file" id="files" />
       </div>
+
+
     </div>
   );
 }
