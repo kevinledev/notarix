@@ -1,9 +1,0 @@
-{
-  "devDependencies": {
-    "hardhat": "^2.22.13"
-  },
-  "dependencies": {
-    "@ethsign/sp-sdk": "^0.7.5",
-    "@synaps-io/verify-sdk": "^4.0.48"
-  }
-}
