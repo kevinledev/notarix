@@ -11,6 +11,7 @@
   "dependencies": {
     "@dynamic-labs/ethereum": "^3.4.2",
     "@dynamic-labs/sdk-react-core": "^3.4.2",
+    "@ethsign/sp-sdk": "^0.7.5",
     "@gatefi/js-sdk": "^0.20.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@synaps-io/verify-sdk": "^4.0.48",

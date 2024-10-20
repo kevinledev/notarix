@@ -26,12 +26,17 @@ export default async function handler(req, res) {
     });
 
     const decodedResponse = response.rows.map((row) => {
-      return decodeOnChainData(
-        row.data,
-        DataLocationOnChain.ONCHAIN,
-        SCHEMA_DETAILS,
-      );
+      return {
+        id: row.id,
+        ...decodeOnChainData(
+          row.data,
+          DataLocationOnChain.ONCHAIN,
+          SCHEMA_DETAILS,
+        ),
+      };
     });
+
+    console.log(decodedResponse);
 
     return res.status(200).json({ success: true, data: decodedResponse });
   } catch (error) {

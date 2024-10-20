@@ -48,6 +48,10 @@ export default function Notary() {
     pendingNotary: "Pending Notary Review",
   };
 
+  const handleViewDetails = () => {
+    //router.push(`/attestation/${id}`);
+  };
+
   return (
     <Table>
       <TableCaption>List of Attestations</TableCaption>
@@ -61,7 +65,7 @@ export default function Notary() {
       </TableHeader>
       <TableBody>
         {data.map((val) => (
-          <TableRow key={val.id}>
+          <TableRow key={val.id} onClick={handleViewDetails}>
             <TableCell className="font-medium">{val.id}</TableCell>
             <TableCell>{val.title}</TableCell>
             <TableCell>
